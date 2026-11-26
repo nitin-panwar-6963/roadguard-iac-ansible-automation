@@ -1,0 +1,72 @@
+
+# =========================
+# Environment & Secrets
+# =========================
+.env
+.env.*
+!.env.example
+*.env
+
+# Credentials & Private Keys
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*
+secrets*
+*.tfvars
+*.tfvars.json
+!example.tfvars
+
+# =========================
+# Terraform
+# =========================
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+terraform.tfstate
+terraform.tfstate.backup
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# =========================
+# Ansible
+# =========================
+*.retry
+vault-password
+vault-password.txt
+.vault_pass
+host_vars/*/vault.yml
+group_vars/*/vault.yml
+
+# =========================
+# SSH & Certificates
+# =========================
+.ssh/
+*.pub
+known_hosts
+authorized_keys
+
+# =========================
+# Logs & Temporary Files
+# =========================
+*.log
+*.tmp
+*.bak
+*.swp
+.DS_Store
+Thumbs.db
+
+# =========================
+# IDE & Editor
+# =========================
+.vscode/
+.idea/
+
