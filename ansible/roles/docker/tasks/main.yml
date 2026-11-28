@@ -14,11 +14,30 @@
       - docker-compose-v2
     state: present
 
+# Docker network fix: pip/SSL "UNEXPECTED_EOF" errors during image build
+# (MTU 1400 + public DNS). Restart happens via handler only if file changes.
+- name: Create Docker daemon config (MTU + DNS fix)
+  copy:
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      {
+        "mtu": 1400,
+        "dns": ["8.8.8.8", "1.1.1.1"]
+      }
+  notify: Restart docker
+
 - name: Ensure Docker service is started and enabled
   service:
     name: docker
     enabled: yes
     state: started
+
+# Apply daemon.json right now (before any image build), not at end of play
+- name: Apply pending Docker restart before building
+  meta: flush_handlers
 
 - name: Add azureuser to docker group
   user:
@@ -26,7 +45,7 @@
     groups: docker
     append: yes
 
-# Clone new GitHub repository
+# Clone GitHub repository
 - name: Clone Nitin-Tushar GitHub Repository
   git:
     repo: "https://github.com/nitin-panwar-6963/RoadGuardAI-Nitin.git"
@@ -52,13 +71,12 @@
     group: azureuser
     mode: "0600"
 
-#Copy the Caddy file for tcl/ssl certificate 
-
+# Copy the Caddyfile (HTTPS certificate via nip.io)
 - name: Copy Caddy file to system dynamically
   copy:
     src: Caddyfile
     dest: /home/azureuser/nitin-tushar-1/Caddyfile
-    mode: '0777'
+    mode: "0644"
     group: azureuser
     owner: azureuser
 
