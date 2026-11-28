@@ -1,0 +1,6 @@
+# play to run the role docker
+- name: Deploy the RoadGuardAI
+  become: yes
+  hosts: servers
+  roles:
+   - docker

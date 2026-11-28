@@ -1,0 +1,11 @@
+---
+# vars file for roles/kubernetes
+
+manifest_name:
+  - namespace.yml
+  - config-backend.yml
+  - config-frontend.yml
+  - deployment-backend.yml
+  - service-backend.yml
+  - deployment-frontend.yml
+  - service-frontend.yml

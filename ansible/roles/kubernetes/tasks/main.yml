@@ -1,0 +1,124 @@
+# tasks file for roles/kubernetes
+
+- name: Update the system
+  apt:
+    upgrade: dist
+    update_cache: yes
+
+- name: Copy the script to download Kind
+  copy:
+    src: kind.bash
+    dest: /tmp/kind.bash
+    mode: '0755'
+    owner: azureuser
+    group: azureuser
+
+- name: Run the Kind installation script
+  command: bash /tmp/kind.bash
+
+- name: Check whether Kind is installed
+  command: kind --version
+  register: kind_version
+  changed_when: false
+
+- name: Print the Kind version
+  debug:
+    msg: "{{ kind_version.stdout }}"
+
+
+# Copy Kind cluster configuration
+
+- name: Copy the Kind configuration file
+  copy:
+    src: kind-config.yml
+    dest: /tmp/kind-config.yml
+    mode: '0644'
+    owner: azureuser
+    group: azureuser
+
+
+# Check existing clusters
+
+- name: Check whether Kind clusters are present
+  command: kind get clusters
+  register: kind_cluster
+  changed_when: false
+  failed_when: false
+
+
+# Create cluster only if it does not exist
+
+- name: Create the Kind cluster
+  command: >
+    kind create cluster
+    --name nitin-cluster
+    --config /tmp/kind-config.yml
+  when: "'nitin-cluster' not in kind_cluster.stdout"
+
+
+# Configure kubectl
+
+- name: Export kubeconfig details
+  command: kind export kubeconfig --name nitin-cluster
+  changed_when: false
+
+- name: Configure kubectl context
+  command: kubectl config use-context kind-nitin-cluster
+  changed_when: false
+
+
+# Check Kubernetes nodes
+
+- name: Check whether kubectl nodes are working
+  command: kubectl get nodes
+  register: nodes
+  changed_when: false
+
+- name: Print Kubernetes nodes
+  debug:
+    msg: "{{ nodes.stdout }}"
+
+
+# Clone Kubernetes manifest repository
+
+- name: Clone the GitHub repository
+  git:
+    repo: "https://github.com/nitin-panwar-6963/RoadGuardAI-k8s.git"
+    dest: /tmp/my-code
+    version: main
+    force: yes
+
+
+# Copy backend configuration
+
+- name: Copy backend configuration file
+  copy:
+    src: config-backend.yml
+    dest: /tmp/my-code/config-backend.yml
+    mode: '0644'
+    owner: azureuser
+    group: azureuser
+
+
+# Copy frontend configuration
+
+- name: Copy frontend configuration file
+  copy:
+    src: config-frontend.yml
+    dest: /tmp/my-code/config-frontend.yml
+    mode: '0644'
+    owner: azureuser
+    group: azureuser
+
+
+# Apply all Kubernetes manifests
+
+- name: Apply all Kubernetes manifests
+  command: kubectl apply -f /tmp/my-code/{{ item }}
+  loop: "{{ manifest_name }}"
+  register: kubectl_apply
+
+
+- name: Print applied manifests
+  debug:
+    msg: "Successfully applied all Kubernetes manifests"
